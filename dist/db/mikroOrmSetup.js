@@ -12,22 +12,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = __importDefault(require("express"));
-const server_1 = require("@apollo/server");
-const express4_1 = require("@apollo/server/express4");
-const resolver_1 = require("./resolver");
-const promises_1 = require("fs/promises");
-const cors_1 = __importDefault(require("cors"));
-const main = () => __awaiter(void 0, void 0, void 0, function* () {
-    const app = (0, express_1.default)();
-    const typeDefs = yield (0, promises_1.readFile)('./src/schema.graphql', 'utf8');
-    const apolloServer = new server_1.ApolloServer({ typeDefs, resolvers: resolver_1.resolvers });
-    yield apolloServer.start();
-    app.use('/graphql', (0, cors_1.default)(), express_1.default.json(), (0, express4_1.expressMiddleware)(apolloServer));
-    app.listen(3000, () => {
-        console.log('Server started on localhost:3000');
-    });
+exports.initializeMikroORM = void 0;
+const core_1 = require("@mikro-orm/core");
+const mikro_orm_config_1 = __importDefault(require("../mikro-orm.config"));
+const initializeMikroORM = () => __awaiter(void 0, void 0, void 0, function* () {
+    const orm = yield core_1.MikroORM.init(mikro_orm_config_1.default);
+    yield orm.getMigrator().up();
+    const em = orm.em.fork();
+    return em;
 });
-main().catch(err => {
-    console.error(err);
-});
+exports.initializeMikroORM = initializeMikroORM;

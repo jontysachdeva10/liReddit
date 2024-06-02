@@ -1,28 +1,25 @@
-import { MikroORM } from "@mikro-orm/core";
 import { __prod__ } from "./constants";
-import { Post } from "./entities/Post";
-import mikroConfig from "./mikro-orm.config";
+import express from 'express';
+import { ApolloServer } from '@apollo/server';
+import { expressMiddleware } from '@apollo/server/express4';
+import { resolvers } from "./resolver";
+import { readFile } from "fs/promises";
+import cors from 'cors';
 
 const main = async () => {
-    // connect to DB
-    const orm = await MikroORM.init(mikroConfig);
-    
-    // Run migrations automatically
-    await orm.getMigrator().up();
+    const app = express();
 
-    const emFork = orm.em.fork();
-    // To add the data
-    const post = emFork.create(Post, {
-        title: 'My first post.',
-        createdAt: "",
-        updatedAt: ""
+    const typeDefs = await readFile('./src/schema.graphql', 'utf8');
+
+    const apolloServer = new ApolloServer({typeDefs, resolvers});
+
+    await apolloServer.start();
+
+    app.use('/graphql', cors<cors.CorsRequest>(), express.json(), expressMiddleware(apolloServer));
+
+    app.listen(3000, () =>{
+        console.log('Server started on localhost:3000');
     });
-    await emFork.persistAndFlush(post);
-
-    // To find the data
-    const posts = await emFork.find(Post, {});
-    console.log('Post', posts);
-    
 };
 
 main().catch(err => {

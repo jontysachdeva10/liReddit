@@ -1,7 +1,7 @@
 import { Entity, Property, PrimaryKey } from "@mikro-orm/core";
 
 @Entity()
-export class Post {
+export class User {
   @PrimaryKey()
   id!: number;
   
@@ -11,6 +11,9 @@ export class Post {
   @Property({ type: "date", onUpdate: () => new Date() })
   updatedAt: Date = new Date();
   
+  @Property({ type: "text", unique: true })
+  username!: string;
+
   @Property({ type: "text" })
-  title!: string;
+  password!: string;
 }
