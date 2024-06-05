@@ -1,0 +1,27 @@
+req.session.userId = user.id;
+
+{ userId: 1 } -> send it to Redis
+
+Redis is a key-value store, we will use key to fetch the object.
+Key might look like... 
+
+1.
+Storing in Redis
+sess:gyh15uiqweb -> { userId: 1 }
+
+2.
+Express-session will set a ENCRYPTED VERSION OF THE KEY as a cookie on my browser, say q78sdcfsdrf7we4we
+
+3.
+When user makes the request, q78sdcfsdrf7we4we -> will be sent to server
+
+4.
+On the server, q78sdcfsdrf7we4we is DECRYPTED using the secret 'qwertyuiop' mentioned in ~index.ts
+q78sdcfsdrf7we4we -> sess:gyh15uiqweb
+
+5. 
+Make a request to Redis
+sess:gyh15uiqweb -> { userId: 1 }
+
+6.
+Store { userId: 1 } -> req.session

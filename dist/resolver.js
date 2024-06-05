@@ -12,22 +12,23 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.resolvers = void 0;
 const posts_1 = require("./db/posts");
 const user_1 = require("./db/user");
+// resolver params => (parent, args, contextValue, info)
 exports.resolvers = {
     Query: {
         // Post
-        posts: () => __awaiter(void 0, void 0, void 0, function* () { return (0, posts_1.getPosts)(); }),
-        post: (_, { id }) => __awaiter(void 0, void 0, void 0, function* () { return (0, posts_1.getPostById)(id); }),
+        posts: (_, __, { em, req, res }) => __awaiter(void 0, void 0, void 0, function* () { return (0, posts_1.getPosts)({ em, req, res }); }),
+        post: (_, { id }, { em, req, res }) => __awaiter(void 0, void 0, void 0, function* () { return (0, posts_1.getPostById)(id, { em, req, res }); }),
         // User
-        users: () => __awaiter(void 0, void 0, void 0, function* () { return (0, user_1.getUsers)(); }),
-        // user: async (_: any, { username } : { username: string }) => getUserByUsername(username),
+        users: (_, __, { em, req, res }) => __awaiter(void 0, void 0, void 0, function* () { return (0, user_1.getUsers)({ em, req, res }); }),
+        currentUser: (_, __, { em, req, res }) => __awaiter(void 0, void 0, void 0, function* () { return (0, user_1.getCurrentUser)({ em, req, res }); }),
     },
     Mutation: {
         // Post
-        createPost: (_, { postInput }) => __awaiter(void 0, void 0, void 0, function* () { return (0, posts_1.createPost)(postInput); }),
-        updatePost: (_, { postInput, id }) => __awaiter(void 0, void 0, void 0, function* () { return (0, posts_1.updatePost)(Object.assign(Object.assign({}, postInput), { id })); }),
-        deletePost: (_, { id }) => __awaiter(void 0, void 0, void 0, function* () { return (0, posts_1.deletePost)(id); }),
+        createPost: (_, { postInput }, { em, req, res }) => __awaiter(void 0, void 0, void 0, function* () { return (0, posts_1.createPost)(postInput, { em, req, res }); }),
+        updatePost: (_, { postInput, id }, { em, req, res }) => __awaiter(void 0, void 0, void 0, function* () { return (0, posts_1.updatePost)(Object.assign(Object.assign({}, postInput), { id }), { em, req, res }); }),
+        deletePost: (_, { id }, { em, req, res }) => __awaiter(void 0, void 0, void 0, function* () { return (0, posts_1.deletePost)(id, { em, req, res }); }),
         // User
-        register: (_, { userInput }) => __awaiter(void 0, void 0, void 0, function* () { return (0, user_1.registerUser)(userInput); }),
-        login: (_, { userInput }) => __awaiter(void 0, void 0, void 0, function* () { return (0, user_1.login)(userInput); })
+        register: (_, { userInput }, { em, req, res }) => __awaiter(void 0, void 0, void 0, function* () { return (0, user_1.registerUser)(userInput, { em, req, res }); }),
+        login: (_, { userInput }, { em, req, res }) => __awaiter(void 0, void 0, void 0, function* () { return (0, user_1.login)(userInput, { em, req, res }); })
     },
 };

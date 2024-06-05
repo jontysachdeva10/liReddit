@@ -32,13 +32,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.login = exports.getUsers = exports.registerUser = void 0;
+exports.login = exports.getCurrentUser = exports.getUsers = exports.registerUser = void 0;
 const User_1 = require("../entities/User");
-const mikroOrmSetup_1 = require("./mikroOrmSetup");
 const argon2 = __importStar(require("argon2"));
-function registerUser({ username, password }) {
+function registerUser({ username, password }, { em, req }) {
     return __awaiter(this, void 0, void 0, function* () {
-        const em = yield (0, mikroOrmSetup_1.initializeMikroORM)();
         const hashedPassword = yield argon2.hash(password);
         const newUser = new User_1.User();
         newUser.username = username;
@@ -57,28 +55,33 @@ function registerUser({ username, password }) {
             }
             console.error(err.message);
         }
+        // store user id session, this will set cookie on the user & keep them logged in
+        req.session.userId = newUser.id;
         return {
             user: newUser
         };
     });
 }
 exports.registerUser = registerUser;
-function getUsers() {
+function getUsers({ em }) {
     return __awaiter(this, void 0, void 0, function* () {
-        const em = yield (0, mikroOrmSetup_1.initializeMikroORM)();
         const users = yield em.find(User_1.User, {});
         return users;
     });
 }
 exports.getUsers = getUsers;
-// export async function getUserByUsername(username: string): Promise<User | null> {
-//     const em = await initializeMikroORM();
-//     const user = await em.findOne(User, { username });
-//     return user;
-// }
-function login({ username, password }) {
+function getCurrentUser({ em, req }) {
     return __awaiter(this, void 0, void 0, function* () {
-        const em = yield (0, mikroOrmSetup_1.initializeMikroORM)();
+        // User not logged in
+        if (!req.session.userId)
+            return null;
+        const user = yield em.findOne(User_1.User, { id: req.session.userId });
+        return user;
+    });
+}
+exports.getCurrentUser = getCurrentUser;
+function login({ username, password }, { em, req }) {
+    return __awaiter(this, void 0, void 0, function* () {
         const user = yield em.findOne(User_1.User, { username });
         if (!user) {
             return {
@@ -99,6 +102,8 @@ function login({ username, password }) {
                 }
             };
         }
+        // store user id in the session
+        req.session.userId = user.id;
         return {
             user,
             error: null

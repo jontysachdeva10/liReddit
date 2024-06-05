@@ -11,26 +11,22 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deletePost = exports.updatePost = exports.createPost = exports.getPostById = exports.getPosts = void 0;
 const Post_1 = require("../entities/Post");
-const mikroOrmSetup_1 = require("./mikroOrmSetup");
-function getPosts() {
+function getPosts({ em }) {
     return __awaiter(this, void 0, void 0, function* () {
-        const em = yield (0, mikroOrmSetup_1.initializeMikroORM)();
         const posts = yield em.find(Post_1.Post, {});
         return posts;
     });
 }
 exports.getPosts = getPosts;
-function getPostById(id) {
+function getPostById(id, { em }) {
     return __awaiter(this, void 0, void 0, function* () {
-        const em = yield (0, mikroOrmSetup_1.initializeMikroORM)();
         const post = yield em.findOne(Post_1.Post, { id });
         return post;
     });
 }
 exports.getPostById = getPostById;
-function createPost({ title }) {
+function createPost({ title }, { em }) {
     return __awaiter(this, void 0, void 0, function* () {
-        const em = yield (0, mikroOrmSetup_1.initializeMikroORM)();
         const newPost = new Post_1.Post();
         newPost.title = title;
         yield em.persistAndFlush(newPost);
@@ -38,9 +34,8 @@ function createPost({ title }) {
     });
 }
 exports.createPost = createPost;
-function updatePost({ id, title }) {
+function updatePost({ id, title }, { em }) {
     return __awaiter(this, void 0, void 0, function* () {
-        const em = yield (0, mikroOrmSetup_1.initializeMikroORM)();
         const post = yield em.findOne(Post_1.Post, { id });
         if (!post) {
             return null;
@@ -51,9 +46,8 @@ function updatePost({ id, title }) {
     });
 }
 exports.updatePost = updatePost;
-function deletePost(id) {
+function deletePost(id, { em }) {
     return __awaiter(this, void 0, void 0, function* () {
-        const em = yield (0, mikroOrmSetup_1.initializeMikroORM)();
         const post = yield em.findOne(Post_1.Post, { id });
         if (!post) {
             return null;
