@@ -9,7 +9,6 @@ const Nav: React.FC<{}> = () => {
   const [{ data, fetching}] = useCurrentUserQuery();
 
   let body = null;
-
   // if data is loading
   if(fetching) {
 

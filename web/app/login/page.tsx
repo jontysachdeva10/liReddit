@@ -18,9 +18,7 @@ const Login: React.FC<{}> = () => {
         initialValues={{ username: "", password: "" }}
         onSubmit={async (values, { setErrors }) => {
           const response = await login({ userInput: values });
-          console.log(response, 'RES');
-          
-
+         
           if (response.data?.login.error) {
             setErrors(toErrorMap(response.data.login.error));
           } else if(response.data?.login.user) {
