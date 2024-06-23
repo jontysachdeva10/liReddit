@@ -32,9 +32,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.login = exports.getCurrentUser = exports.getUsers = exports.registerUser = void 0;
+exports.logout = exports.login = exports.getCurrentUser = exports.getUsers = exports.registerUser = void 0;
 const User_1 = require("../entities/User");
 const argon2 = __importStar(require("argon2"));
+const constants_1 = require("../constants");
 function registerUser(_a, _b) {
     return __awaiter(this, arguments, void 0, function* ({ username, password }, { em, req }) {
         if (username.length <= 2) {
@@ -134,3 +135,17 @@ function login(_a, _b) {
     });
 }
 exports.login = login;
+function logout(_a) {
+    return __awaiter(this, arguments, void 0, function* ({ em, req, res }) {
+        return new Promise((resolve) => req.session.destroy((err) => {
+            res.clearCookie(constants_1.COOKIE_NAME);
+            if (err) {
+                console.log(err, "Error");
+                resolve(false);
+                return;
+            }
+            resolve(true);
+        }));
+    });
+}
+exports.logout = logout;

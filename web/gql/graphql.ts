@@ -31,6 +31,7 @@ export type Mutation = {
   createPost?: Maybe<Post>;
   deletePost?: Maybe<Post>;
   login?: Maybe<UserResponse>;
+  logout: Scalars['Boolean']['output'];
   register?: Maybe<UserResponse>;
   updatePost?: Maybe<Post>;
 };
@@ -108,6 +109,11 @@ export type LoginMutationVariables = Exact<{
 
 
 export type LoginMutation = { __typename?: 'Mutation', login?: { __typename?: 'UserResponse', user?: { __typename?: 'User', id: string, username: string, password: string } | null, error?: { __typename?: 'Error', code: string, field: string, message: string } | null } | null };
+
+export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type LogoutMutation = { __typename?: 'Mutation', logout: boolean };
 
 export type RegisterMutationVariables = Exact<{
   userInput: UserInput;
@@ -142,6 +148,7 @@ export type Mutation = {
   createPost?: Maybe<Post>;
   deletePost?: Maybe<Post>;
   login?: Maybe<UserResponse>;
+  logout: Scalars['Boolean']['output'];
   register?: Maybe<UserResponse>;
   updatePost?: Maybe<Post>;
 };
@@ -220,6 +227,11 @@ export type LoginMutationVariables = Exact<{
 
 export type LoginMutation = { __typename?: 'Mutation', login?: { __typename?: 'UserResponse', user?: { __typename?: 'User', id: string, username: string, password: string } | null, error?: { __typename?: 'Error', code: string, field: string, message: string } | null } | null };
 
+export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type LogoutMutation = { __typename?: 'Mutation', logout: boolean };
+
 export type RegisterMutationVariables = Exact<{
   userInput: UserInput;
 }>;
@@ -252,6 +264,15 @@ export const LoginDocument = gql`
 
 export function useLoginMutation() {
   return Urql.useMutation<LoginMutation, LoginMutationVariables>(LoginDocument);
+};
+export const LogoutDocument = gql`
+    mutation Logout {
+  logout
+}
+    `;
+
+export function useLogoutMutation() {
+  return Urql.useMutation<LogoutMutation, LogoutMutationVariables>(LogoutDocument);
 };
 export const RegisterDocument = gql`
     mutation Register($userInput: UserInput!) {

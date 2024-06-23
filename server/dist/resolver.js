@@ -29,6 +29,7 @@ exports.resolvers = {
         deletePost: (_7, _k, _l) => __awaiter(void 0, [_7, _k, _l], void 0, function* (_, { id }, { em, req, res }) { return (0, posts_1.deletePost)(id, { em, req, res }); }),
         // User
         register: (_8, _m, _o) => __awaiter(void 0, [_8, _m, _o], void 0, function* (_, { userInput }, { em, req, res }) { return (0, user_1.registerUser)(userInput, { em, req, res }); }),
-        login: (_9, _p, _q) => __awaiter(void 0, [_9, _p, _q], void 0, function* (_, { userInput }, { em, req, res }) { return (0, user_1.login)(userInput, { em, req, res }); })
+        login: (_9, _p, _q) => __awaiter(void 0, [_9, _p, _q], void 0, function* (_, { userInput }, { em, req, res }) { return (0, user_1.login)(userInput, { em, req, res }); }),
+        logout: (_10, __4, _r) => __awaiter(void 0, [_10, __4, _r], void 0, function* (_, __, { em, req, res }) { return (0, user_1.logout)({ em, req, res }); })
     },
 };

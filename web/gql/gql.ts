@@ -14,6 +14,7 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  */
 const documents = {
     "mutation Login($userInput: UserInput!) {\n  login(userInput: $userInput) {\n    user {\n      id\n      username\n      password\n    }\n    error {\n      code\n      field\n      message\n    }\n  }\n}": types.LoginDocument,
+    "mutation Logout {\n  logout\n}": types.LogoutDocument,
     "mutation Register($userInput: UserInput!) {\n  register(userInput: $userInput) {\n    user {\n      id\n      username\n      password\n    }\n    error {\n      code\n      field\n      message\n    }\n  }\n}": types.RegisterDocument,
     "query CurrentUser {\n  currentUser {\n    id\n    username\n    password\n  }\n}": types.CurrentUserDocument,
 };
@@ -36,6 +37,10 @@ export function graphql(source: string): unknown;
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "mutation Login($userInput: UserInput!) {\n  login(userInput: $userInput) {\n    user {\n      id\n      username\n      password\n    }\n    error {\n      code\n      field\n      message\n    }\n  }\n}"): (typeof documents)["mutation Login($userInput: UserInput!) {\n  login(userInput: $userInput) {\n    user {\n      id\n      username\n      password\n    }\n    error {\n      code\n      field\n      message\n    }\n  }\n}"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "mutation Logout {\n  logout\n}"): (typeof documents)["mutation Logout {\n  logout\n}"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

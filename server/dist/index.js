@@ -37,7 +37,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         console.error('Redis client error:', err);
     });
     app.use((0, express_session_1.default)({
-        name: 'qid',
+        name: constants_1.COOKIE_NAME,
         store: new RedisStore({ client: redisClient, disableTouch: false }),
         secret: 'qwertyuiop',
         resave: false, // Recommended setting

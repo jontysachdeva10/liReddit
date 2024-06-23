@@ -1,11 +1,11 @@
 'use client';
 
 import { Box, Button, Flex, Link } from "@chakra-ui/react";
-import { useCurrentUserQuery } from "@gql/graphql";
+import { useCurrentUserQuery, useLogoutMutation } from "@gql/graphql";
 import NextLink from 'next/link';
 
 const Nav: React.FC<{}> = () => {
-
+  const [{ fetching: logoutFetching }, logout] = useLogoutMutation();
   const [{ data, fetching}] = useCurrentUserQuery();
 
   let body = null;
@@ -29,7 +29,7 @@ const Nav: React.FC<{}> = () => {
     body = 
     <Flex>
       <Box mr={2}>{data.currentUser.username}</Box>
-      <Button variant='link' color={'white'}>Logout</Button>
+      <Button variant='link' color={'white'} onClick={() => { logout({}) }} isLoading={logoutFetching}>Logout</Button>
     </Flex>
     
   }

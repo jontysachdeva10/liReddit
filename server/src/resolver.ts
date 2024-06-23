@@ -1,6 +1,6 @@
 import { MyContext } from "./types";
 import { createPost, deletePost, getPostById, getPosts, updatePost } from "./db/posts";
-import { getCurrentUser, getUsers, login, registerUser } from "./db/user";
+import { getCurrentUser, getUsers, login, logout, registerUser } from "./db/user";
 
 // resolver params => (parent, args, contextValue, info)
 
@@ -22,6 +22,7 @@ export const resolvers = {
 
     // User
     register: async(_: any, { userInput }: { userInput: { username: string, password: string }}, { em, req, res }: MyContext) => registerUser(userInput, { em, req, res }),
-    login: async(_: any, { userInput }: { userInput: { username: string, password: string }}, { em, req, res }: MyContext ) => login(userInput, { em, req, res })
+    login: async(_: any, { userInput }: { userInput: { username: string, password: string }}, { em, req, res }: MyContext ) => login(userInput, { em, req, res }),
+    logout: async(_:any, __:any, {em, req, res}: MyContext) => logout({em, req, res})
   },
 };

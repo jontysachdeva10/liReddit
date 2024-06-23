@@ -3,11 +3,18 @@
 import { Provider, createClient, fetchExchange } from "urql";
 import { Data, cacheExchange } from '@urql/exchange-graphcache';
 import { Providers } from "./providers";
-import { CurrentUserDocument, CurrentUserQuery, LoginMutation, RegisterMutation } from "@gql/graphql";
+import { CurrentUserDocument, CurrentUserQuery, LoginMutation, LogoutMutation, RegisterMutation } from "@gql/graphql";
 
 const cache = cacheExchange({
   updates: {
     Mutation: {
+      logout: (result: LogoutMutation, args, cache, info) => {
+        cache.updateQuery({ query: CurrentUserDocument}, (data: CurrentUserQuery | null) => {
+          return {
+            currentUser: null
+          }
+        })
+      },
       login: (result: LoginMutation, args, cache, info) => {
         const { login } = result;  
         cache.updateQuery({ query: CurrentUserDocument }, (data: CurrentUserQuery | null) => {

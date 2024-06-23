@@ -1,6 +1,7 @@
 import { MyContext } from "../types";
 import { User } from "../entities/User";
 import * as argon2 from "argon2";
+import { COOKIE_NAME } from "../constants";
 
 export async function registerUser(
   { username, password }: { username: string; password: string },
@@ -108,4 +109,19 @@ export async function login(
     user,
     error: null,
   };
+}
+
+export async function logout({ em, req, res }: MyContext) {
+  return new Promise((resolve) =>
+    req.session.destroy((err) => {
+      res.clearCookie(COOKIE_NAME);
+      if (err) {
+        console.log(err, "Error");
+        resolve(false);
+        return;
+      }
+
+      resolve(true);
+    })
+  );
 }

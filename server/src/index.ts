@@ -1,4 +1,4 @@
-import { __prod__ } from "./constants";
+import { COOKIE_NAME, __prod__ } from "./constants";
 import express, { Request, Response } from 'express';
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware as apolloMiddleware } from '@apollo/server/express4';
@@ -29,7 +29,7 @@ const main = async () => {
     });
  
     app.use(session({   
-        name: 'qid',
+        name: COOKIE_NAME,
         store: new RedisStore({ client: redisClient as any, disableTouch: false }),
         secret: 'qwertyuiop',
         resave: false, // Recommended setting

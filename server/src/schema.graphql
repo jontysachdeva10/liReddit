@@ -42,4 +42,5 @@ type Mutation {
   deletePost(id: ID!): Post
   register(userInput: UserInput!): UserResponse
   login(userInput: UserInput!): UserResponse
+  logout: Boolean!
 }
