@@ -1,6 +1,19 @@
+'use client';
+
 import { Box } from "@chakra-ui/react";
 
-const Wrapper = ({ children, variant = "regular" }) => {
+interface WrapperProps {
+  children: React.ReactNode,
+  variant?: 'small' | 'regular',
+}
+
+const Wrapper: React.FC<WrapperProps> = ({
+  children,
+  variant = "regular",
+}: {
+  children: React.ReactNode;
+  variant?: string;
+}) => {
   return (
     <Box
       mt={8}
