@@ -35,8 +35,28 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.login = exports.getCurrentUser = exports.getUsers = exports.registerUser = void 0;
 const User_1 = require("../entities/User");
 const argon2 = __importStar(require("argon2"));
-function registerUser({ username, password }, { em, req }) {
-    return __awaiter(this, void 0, void 0, function* () {
+function registerUser(_a, _b) {
+    return __awaiter(this, arguments, void 0, function* ({ username, password }, { em, req }) {
+        if (username.length <= 2) {
+            return {
+                user: null,
+                error: {
+                    code: "INVALID_USERNAME",
+                    field: "username",
+                    message: "Length must be greater than 2.",
+                },
+            };
+        }
+        if (password.length <= 2) {
+            return {
+                user: null,
+                error: {
+                    code: "INVALID_PASSWORD",
+                    field: "password",
+                    message: "Length must be greater than 2.",
+                },
+            };
+        }
         const hashedPassword = yield argon2.hash(password);
         const newUser = new User_1.User();
         newUser.username = username;
@@ -45,12 +65,13 @@ function registerUser({ username, password }, { em, req }) {
             yield em.persistAndFlush(newUser);
         }
         catch (err) {
-            if (err.code === '23505') {
+            if (err.code === "23505") {
                 return {
                     error: {
-                        code: 'ALREADY_EXIST',
-                        message: 'Username is already taken.'
-                    }
+                        code: "ALREADY_EXIST",
+                        field: "username",
+                        message: "Username is already taken.",
+                    },
                 };
             }
             console.error(err.message);
@@ -58,20 +79,20 @@ function registerUser({ username, password }, { em, req }) {
         // store user id session, this will set cookie on the user & keep them logged in
         req.session.userId = newUser.id;
         return {
-            user: newUser
+            user: newUser,
         };
     });
 }
 exports.registerUser = registerUser;
-function getUsers({ em }) {
-    return __awaiter(this, void 0, void 0, function* () {
+function getUsers(_a) {
+    return __awaiter(this, arguments, void 0, function* ({ em }) {
         const users = yield em.find(User_1.User, {});
         return users;
     });
 }
 exports.getUsers = getUsers;
-function getCurrentUser({ em, req }) {
-    return __awaiter(this, void 0, void 0, function* () {
+function getCurrentUser(_a) {
+    return __awaiter(this, arguments, void 0, function* ({ em, req, }) {
         // User not logged in
         if (!req.session.userId)
             return null;
@@ -80,16 +101,17 @@ function getCurrentUser({ em, req }) {
     });
 }
 exports.getCurrentUser = getCurrentUser;
-function login({ username, password }, { em, req }) {
-    return __awaiter(this, void 0, void 0, function* () {
+function login(_a, _b) {
+    return __awaiter(this, arguments, void 0, function* ({ username, password }, { em, req }) {
         const user = yield em.findOne(User_1.User, { username });
         if (!user) {
             return {
                 user: null,
                 error: {
-                    code: 'NOT_FOUND',
-                    message: `No user with username ${username}.`
-                }
+                    code: "NOT_FOUND",
+                    field: "username",
+                    message: `No user with username ${username}.`,
+                },
             };
         }
         const validatePassword = yield argon2.verify(user.password, password);
@@ -97,16 +119,17 @@ function login({ username, password }, { em, req }) {
             return {
                 user: null,
                 error: {
-                    code: 'INVALID_PASSWORD',
-                    message: `No user with username ${username}.`
-                }
+                    code: "INVALID_PASSWORD",
+                    field: "password",
+                    message: `Your password doesn't match.`,
+                },
             };
         }
         // store user id in the session
         req.session.userId = user.id;
         return {
             user,
-            error: null
+            error: null,
         };
     });
 }

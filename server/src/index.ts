@@ -52,16 +52,22 @@ const main = async () => {
     // Create Apollo Server instance
     const apolloServer = new ApolloServer({ 
         typeDefs, 
-        resolvers
+        resolvers,
     });
 
     await apolloServer.start();
 
-    app.use('/graphql', cors<cors.CorsRequest>(), express.json(), apolloMiddleware(apolloServer, { context: getContext })
+     // CORS options
+     const corsOptions = {
+        origin: 'http://localhost:3000',  // Specify the origin you want to allow
+        credentials: true,  // Allow session cookie from browser to pass through
+    };
+
+    app.use('/graphql', cors<cors.CorsRequest>(corsOptions), express.json(), apolloMiddleware(apolloServer, { context: getContext })
     );
 
-    app.listen(3000, () =>{
-        console.log('Server started on localhost:3000');
+    app.listen(4000, () =>{
+        console.log('Server started on localhost:4000');
     });
 };
 

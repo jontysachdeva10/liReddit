@@ -40,31 +40,36 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         name: 'qid',
         store: new RedisStore({ client: redisClient, disableTouch: false }),
         secret: 'qwertyuiop',
-        resave: false,
-        saveUninitialized: false,
+        resave: false, // Recommended setting
+        saveUninitialized: false, // Recommended setting
         cookie: {
-            secure: constants_1.__prod__,
-            maxAge: 1000 * 60 * 60 * 24 * 365 * 1,
+            secure: constants_1.__prod__, // Set to true if using HTTPS
+            maxAge: 1000 * 60 * 60 * 24 * 365 * 1, // 1 year,
             httpOnly: true,
             sameSite: 'lax' // csrf
         },
     }));
     // Read GraphQL type definitions from file
     const typeDefs = yield (0, promises_1.readFile)('./src/schema.graphql', 'utf8');
-    function getContext({ req, res }) {
-        return __awaiter(this, void 0, void 0, function* () {
+    function getContext(_a) {
+        return __awaiter(this, arguments, void 0, function* ({ req, res }) {
             return { em, req: req, res };
         });
     }
     // Create Apollo Server instance
     const apolloServer = new server_1.ApolloServer({
         typeDefs,
-        resolvers: resolver_1.resolvers
+        resolvers: resolver_1.resolvers,
     });
     yield apolloServer.start();
-    app.use('/graphql', (0, cors_1.default)(), express_1.default.json(), (0, express4_1.expressMiddleware)(apolloServer, { context: getContext }));
-    app.listen(3000, () => {
-        console.log('Server started on localhost:3000');
+    // CORS options
+    const corsOptions = {
+        origin: 'http://localhost:3000', // Specify the origin you want to allow
+        credentials: true, // Allow session cookie from browser to pass through
+    };
+    app.use('/graphql', (0, cors_1.default)(corsOptions), express_1.default.json(), (0, express4_1.expressMiddleware)(apolloServer, { context: getContext }));
+    app.listen(4000, () => {
+        console.log('Server started on localhost:4000');
     });
 });
 main().catch(err => {

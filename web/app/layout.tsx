@@ -1,16 +1,26 @@
+'use client';
+
+import { Provider, createClient, fetchExchange } from "urql";
+import { cacheExchange } from '@urql/exchange-graphcache';
 import { Providers } from "./providers";
 
-export const metadata = {
-  title: "Li-Reddit",
-  description: "Something like Reddit..",
-};
+const client = createClient({
+  url: "http://localhost:4000/graphql",
+  exchanges: [cacheExchange({}), fetchExchange],
+  fetchOptions: {
+    credentials: 'include'
+  }
+});
+
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <html lang="en">
-        <body>
+      <body>
+        <Provider value={client}>
           <Providers>{children}</Providers>
-        </body>
+        </Provider>
+      </body>
     </html>
   );
 };
