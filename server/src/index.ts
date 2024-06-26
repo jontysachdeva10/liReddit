@@ -5,7 +5,7 @@ import { expressMiddleware as apolloMiddleware } from '@apollo/server/express4';
 import { resolvers } from "./resolver";
 import { readFile } from "fs/promises";
 import cors from 'cors';
-import redis from "redis";
+import redis from "ioredis";
 import session from 'express-session';
 import connectRedis  from 'connect-redis';
 import { MikroORM } from "@mikro-orm/core";
@@ -46,7 +46,7 @@ const main = async () => {
     const typeDefs = await readFile('./src/schema.graphql', 'utf8');
 
     async function getContext({ req, res }: { req: Request, res: Response }): Promise<MyContext> {
-        return { em, req: req as Request & { session: Express.Session }, res }
+        return { em, req: req as Request & { session: Express.Session }, res, redisClient }
     }
 
     // Create Apollo Server instance

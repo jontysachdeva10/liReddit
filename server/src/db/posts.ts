@@ -1,11 +1,10 @@
 import { MyContext } from "../types";
 import { Post } from "../entities/Post";
 
-const sleep = (ms: number) => new Promise(res => setTimeout(res, ms))
+
 
 export async function getPosts({ em }: MyContext) {
   const posts = await em.find(Post, {});
-  await sleep(3000);
   return posts;
 }
 

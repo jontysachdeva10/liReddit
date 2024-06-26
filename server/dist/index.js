@@ -19,7 +19,7 @@ const express4_1 = require("@apollo/server/express4");
 const resolver_1 = require("./resolver");
 const promises_1 = require("fs/promises");
 const cors_1 = __importDefault(require("cors"));
-const redis_1 = __importDefault(require("redis"));
+const ioredis_1 = __importDefault(require("ioredis"));
 const express_session_1 = __importDefault(require("express-session"));
 const connect_redis_1 = __importDefault(require("connect-redis"));
 const core_1 = require("@mikro-orm/core");
@@ -32,7 +32,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const em = orm.em.fork();
     // create redis client
     const RedisStore = (0, connect_redis_1.default)(express_session_1.default);
-    const redisClient = redis_1.default.createClient();
+    const redisClient = ioredis_1.default.createClient();
     redisClient.on('error', (err) => {
         console.error('Redis client error:', err);
     });
@@ -53,7 +53,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const typeDefs = yield (0, promises_1.readFile)('./src/schema.graphql', 'utf8');
     function getContext(_a) {
         return __awaiter(this, arguments, void 0, function* ({ req, res }) {
-            return { em, req: req, res };
+            return { em, req: req, res, redisClient };
         });
     }
     // Create Apollo Server instance

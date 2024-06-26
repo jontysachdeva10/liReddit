@@ -32,35 +32,22 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.logout = exports.login = exports.getCurrentUser = exports.getUsers = exports.registerUser = void 0;
+exports.forgotPassword = exports.logout = exports.login = exports.getCurrentUser = exports.getUsers = exports.registerUser = void 0;
 const User_1 = require("../entities/User");
 const argon2 = __importStar(require("argon2"));
 const constants_1 = require("../constants");
+const validateRegisteration_1 = require("../utils/validateRegisteration");
+const sendEmail_1 = require("../utils/sendEmail");
+const uuid_1 = require("uuid");
 function registerUser(_a, _b) {
-    return __awaiter(this, arguments, void 0, function* ({ username, password }, { em, req }) {
-        if (username.length <= 2) {
-            return {
-                user: null,
-                error: {
-                    code: "INVALID_USERNAME",
-                    field: "username",
-                    message: "Length must be greater than 2.",
-                },
-            };
-        }
-        if (password.length <= 2) {
-            return {
-                user: null,
-                error: {
-                    code: "INVALID_PASSWORD",
-                    field: "password",
-                    message: "Length must be greater than 2.",
-                },
-            };
-        }
+    return __awaiter(this, arguments, void 0, function* ({ username, email, password, }, { em, req }) {
+        const error = (0, validateRegisteration_1.validateRegisteration)(username, email, password);
+        if (error)
+            return error;
         const hashedPassword = yield argon2.hash(password);
         const newUser = new User_1.User();
         newUser.username = username;
+        newUser.email = email;
         newUser.password = hashedPassword;
         try {
             yield em.persistAndFlush(newUser);
@@ -103,15 +90,17 @@ function getCurrentUser(_a) {
 }
 exports.getCurrentUser = getCurrentUser;
 function login(_a, _b) {
-    return __awaiter(this, arguments, void 0, function* ({ username, password }, { em, req }) {
-        const user = yield em.findOne(User_1.User, { username });
+    return __awaiter(this, arguments, void 0, function* ({ usernameOrEmail, password }, { em, req }) {
+        const user = yield em.findOne(User_1.User, usernameOrEmail.includes("@")
+            ? { email: usernameOrEmail }
+            : { username: usernameOrEmail });
         if (!user) {
             return {
                 user: null,
                 error: {
                     code: "NOT_FOUND",
-                    field: "username",
-                    message: `No user with username ${username}.`,
+                    field: "usernameOrEmail",
+                    message: `No user found with username/email ${usernameOrEmail}.`,
                 },
             };
         }
@@ -149,3 +138,17 @@ function logout(_a) {
     });
 }
 exports.logout = logout;
+function forgotPassword(_a, _b) {
+    return __awaiter(this, arguments, void 0, function* ({ email }, { em, req, redisClient }) {
+        const user = yield em.findOne(User_1.User, { email });
+        if (!user) {
+            // email is not in DB
+            return true;
+        }
+        const token = (0, uuid_1.v4)();
+        yield redisClient.set(constants_1.FORGOT_PASSWORD_PREFIX + token, user.id);
+        (0, sendEmail_1.sendEmail)(email, 'Reset Password', `<a href="http://localhost:3000/change-password/${token}">Reset Password</a>`);
+        return true;
+    });
+}
+exports.forgotPassword = forgotPassword;

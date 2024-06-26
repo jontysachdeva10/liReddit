@@ -1,38 +1,28 @@
 import { MyContext } from "../types";
 import { User } from "../entities/User";
 import * as argon2 from "argon2";
-import { COOKIE_NAME } from "../constants";
+import { COOKIE_NAME, FORGOT_PASSWORD_PREFIX } from "../constants";
+import { validateRegisteration } from "../utils/validateRegisteration";
+import { sendEmail } from "../utils/sendEmail";
+import { v4 } from "uuid";
 
 export async function registerUser(
-  { username, password }: { username: string; password: string },
+  {
+    username,
+    email,
+    password,
+  }: { username: string; email: string; password: string },
   { em, req }: MyContext
 ) {
-  if (username.length <= 2) {
-    return {
-      user: null,
-      error: {
-        code: "INVALID_USERNAME",
-        field: "username",
-        message: "Length must be greater than 2.",
-      },
-    };
-  }
 
-  if (password.length <= 2) {
-    return {
-      user: null,
-      error: {
-        code: "INVALID_PASSWORD",
-        field: "password",
-        message: "Length must be greater than 2.",
-      },
-    };
-  }
+  const error = validateRegisteration(username, email, password);
+  if(error) return error ;
 
   const hashedPassword = await argon2.hash(password);
 
   const newUser = new User();
   newUser.username = username;
+  newUser.email = email;
   newUser.password = hashedPassword;
 
   try {
@@ -74,18 +64,23 @@ export async function getCurrentUser({
 }
 
 export async function login(
-  { username, password }: { username: string; password: string },
+  { usernameOrEmail, password }: { usernameOrEmail: string; password: string },
   { em, req }: MyContext
 ) {
-  const user = await em.findOne(User, { username });
+  const user = await em.findOne(
+    User,
+    usernameOrEmail.includes("@")
+      ? { email: usernameOrEmail }
+      : { username: usernameOrEmail }
+  );
 
   if (!user) {
     return {
       user: null,
       error: {
         code: "NOT_FOUND",
-        field: "username",
-        message: `No user with username ${username}.`,
+        field: "usernameOrEmail",
+        message: `No user found with username/email ${usernameOrEmail}.`,
       },
     };
   }
@@ -124,4 +119,24 @@ export async function logout({ em, req, res }: MyContext) {
       resolve(true);
     })
   );
+}
+
+export async function forgotPassword({ email }: { email:string }, { em, req, redisClient }: MyContext) {
+  const user = await em.findOne(User, { email });
+  
+  if(!user) {
+    // email is not in DB
+    return true;
+  }
+
+  const token = v4();
+  await redisClient.set(FORGOT_PASSWORD_PREFIX + token, user.id);
+
+  sendEmail(
+    email,
+    'Reset Password',
+    `<a href="http://localhost:3000/change-password/${token}">Reset Password</a>`
+  );
+
+  return true;
 }

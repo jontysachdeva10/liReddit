@@ -30,6 +30,7 @@ export type Mutation = {
   __typename?: 'Mutation';
   createPost?: Maybe<Post>;
   deletePost?: Maybe<Post>;
+  forgotPassword: Scalars['Boolean']['output'];
   login?: Maybe<UserResponse>;
   logout: Scalars['Boolean']['output'];
   register?: Maybe<UserResponse>;
@@ -48,7 +49,8 @@ export type MutationDeletePostArgs = {
 
 
 export type MutationLoginArgs = {
-  userInput: UserInput;
+  password: Scalars['String']['input'];
+  usernameOrEmail: Scalars['String']['input'];
 };
 
 
@@ -87,12 +89,14 @@ export type QueryPostArgs = {
 
 export type User = {
   __typename?: 'User';
+  email: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   password: Scalars['String']['output'];
   username: Scalars['String']['output'];
 };
 
 export type UserInput = {
+  email: Scalars['String']['input'];
   password: Scalars['String']['input'];
   username: Scalars['String']['input'];
 };
@@ -104,7 +108,8 @@ export type UserResponse = {
 };
 
 export type LoginMutationVariables = Exact<{
-  userInput: UserInput;
+  usernameOrEmail: Scalars['String']['input'];
+  password: Scalars['String']['input'];
 }>;
 
 
@@ -120,7 +125,7 @@ export type RegisterMutationVariables = Exact<{
 }>;
 
 
-export type RegisterMutation = { __typename?: 'Mutation', register?: { __typename?: 'UserResponse', user?: { __typename?: 'User', id: string, username: string, password: string } | null, error?: { __typename?: 'Error', code: string, field: string, message: string } | null } | null };
+export type RegisterMutation = { __typename?: 'Mutation', register?: { __typename?: 'UserResponse', user?: { __typename?: 'User', id: string, username: string, email: string, password: string } | null, error?: { __typename?: 'Error', code: string, field: string, message: string } | null } | null };
 
 export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -152,6 +157,7 @@ export type Mutation = {
   __typename?: 'Mutation';
   createPost?: Maybe<Post>;
   deletePost?: Maybe<Post>;
+  forgotPassword: Scalars['Boolean']['output'];
   login?: Maybe<UserResponse>;
   logout: Scalars['Boolean']['output'];
   register?: Maybe<UserResponse>;
@@ -170,7 +176,8 @@ export type MutationDeletePostArgs = {
 
 
 export type MutationLoginArgs = {
-  userInput: UserInput;
+  password: Scalars['String']['input'];
+  usernameOrEmail: Scalars['String']['input'];
 };
 
 
@@ -209,12 +216,14 @@ export type QueryPostArgs = {
 
 export type User = {
   __typename?: 'User';
+  email: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   password: Scalars['String']['output'];
   username: Scalars['String']['output'];
 };
 
 export type UserInput = {
+  email: Scalars['String']['input'];
   password: Scalars['String']['input'];
   username: Scalars['String']['input'];
 };
@@ -226,7 +235,8 @@ export type UserResponse = {
 };
 
 export type LoginMutationVariables = Exact<{
-  userInput: UserInput;
+  usernameOrEmail: Scalars['String']['input'];
+  password: Scalars['String']['input'];
 }>;
 
 
@@ -242,7 +252,7 @@ export type RegisterMutationVariables = Exact<{
 }>;
 
 
-export type RegisterMutation = { __typename?: 'Mutation', register?: { __typename?: 'UserResponse', user?: { __typename?: 'User', id: string, username: string, password: string } | null, error?: { __typename?: 'Error', code: string, field: string, message: string } | null } | null };
+export type RegisterMutation = { __typename?: 'Mutation', register?: { __typename?: 'UserResponse', user?: { __typename?: 'User', id: string, username: string, email: string, password: string } | null, error?: { __typename?: 'Error', code: string, field: string, message: string } | null } | null };
 
 export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -256,8 +266,8 @@ export type PostsQuery = { __typename?: 'Query', posts?: Array<{ __typename?: 'P
 
 
 export const LoginDocument = gql`
-    mutation Login($userInput: UserInput!) {
-  login(userInput: $userInput) {
+    mutation Login($usernameOrEmail: String!, $password: String!) {
+  login(usernameOrEmail: $usernameOrEmail, password: $password) {
     user {
       id
       username
@@ -290,6 +300,7 @@ export const RegisterDocument = gql`
     user {
       id
       username
+      email
       password
     }
     error {

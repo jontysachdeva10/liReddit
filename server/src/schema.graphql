@@ -6,6 +6,7 @@ type Post {
 type User {
   id: ID!
   username: String!
+  email: String!
   password: String!
 }
 
@@ -21,6 +22,7 @@ input PostInput {
 
 input UserInput {
   username: String!
+  email: String!
   password: String!
 }
 
@@ -41,6 +43,7 @@ type Mutation {
   updatePost(postInput: PostInput!, id: ID!): Post
   deletePost(id: ID!): Post
   register(userInput: UserInput!): UserResponse
-  login(userInput: UserInput!): UserResponse
+  login(usernameOrEmail: String!, password: String!): UserResponse
   logout: Boolean!
+  forgotPassword(email: String!): Boolean!
 }

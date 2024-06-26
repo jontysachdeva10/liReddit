@@ -1,28 +1,29 @@
 import { MyContext } from "./types";
 import { createPost, deletePost, getPostById, getPosts, updatePost } from "./db/posts";
-import { getCurrentUser, getUsers, login, logout, registerUser } from "./db/user";
+import { forgotPassword, getCurrentUser, getUsers, login, logout, registerUser } from "./db/user";
 
 // resolver params => (parent, args, contextValue, info)
 
 export const resolvers = {
   Query: {
     // Post
-    posts: async (_: any, __: any, { em, req, res }: MyContext) => getPosts({ em, req, res }),
-    post: async (_: any, { id }: { id: number }, { em, req, res }: MyContext) => getPostById(id, { em, req, res }),
+    posts: async (_: any, __: any, { em, req, res, redisClient }: MyContext) => getPosts({ em, req, res, redisClient }),
+    post: async (_: any, { id }: { id: number }, { em, req, res, redisClient }: MyContext) => getPostById(id, { em, req, res, redisClient }),
 
     // User
-    users: async (_: any, __: any, { em, req, res }: MyContext) => getUsers({ em, req, res }),
-    currentUser: async (_: any, __:any, { em, req, res }: MyContext) => getCurrentUser({ em, req, res }),
+    users: async (_: any, __: any, { em, req, res, redisClient }: MyContext) => getUsers({ em, req, res, redisClient }),
+    currentUser: async (_: any, __:any, { em, req, res, redisClient }: MyContext) => getCurrentUser({ em, req, res, redisClient }),
   },
   Mutation: {
     // Post
-    createPost: async (_: any, { postInput }: { postInput: { title: string } }, { em, req, res }: MyContext) => createPost(postInput, { em, req, res }),
-    updatePost: async (_: any, { postInput, id }: { postInput: { title: string }; id: number }, { em, req, res }: MyContext) => updatePost({...postInput, id }, { em, req, res }),
-    deletePost: async (_: any, { id }: { id: number }, { em, req, res }: MyContext) => deletePost(id, { em, req, res }),
+    createPost: async (_: any, { postInput }: { postInput: { title: string } }, { em, req, res, redisClient }: MyContext) => createPost(postInput, { em, req, res, redisClient }),
+    updatePost: async (_: any, { postInput, id }: { postInput: { title: string }; id: number }, { em, req, res, redisClient }: MyContext) => updatePost({...postInput, id }, { em, req, res, redisClient }),
+    deletePost: async (_: any, { id }: { id: number }, { em, req, res, redisClient }: MyContext) => deletePost(id, { em, req, res, redisClient }),
 
     // User
-    register: async(_: any, { userInput }: { userInput: { username: string, password: string }}, { em, req, res }: MyContext) => registerUser(userInput, { em, req, res }),
-    login: async(_: any, { userInput }: { userInput: { username: string, password: string }}, { em, req, res }: MyContext ) => login(userInput, { em, req, res }),
-    logout: async(_:any, __:any, {em, req, res}: MyContext) => logout({em, req, res})
+    register: async(_: any, { userInput }: { userInput: { username: string, email: string, password: string }}, { em, req, res, redisClient }: MyContext) => registerUser(userInput, { em, req, res, redisClient }),
+    login: async(_: any, { usernameOrEmail, password }: {usernameOrEmail: string, password: string}, { em, req, res, redisClient }: MyContext ) => login({ usernameOrEmail, password }, { em, req, res, redisClient }),
+    logout: async(_:any, __:any, {em, req, res, redisClient}: MyContext) => logout({em, req, res, redisClient}),
+    forgotPassword: async(_:any, { email }: { email: string }, {em, req, res, redisClient}: MyContext) => forgotPassword({ email }, { em, req, res, redisClient })
   },
 };

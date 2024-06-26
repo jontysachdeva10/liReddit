@@ -3,6 +3,7 @@ mutation Register($userInput: UserInput!) {
     user {
       id
       username
+      email
       password
     }
     error {
