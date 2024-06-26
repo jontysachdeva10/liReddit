@@ -11,9 +11,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deletePost = exports.updatePost = exports.createPost = exports.getPostById = exports.getPosts = void 0;
 const Post_1 = require("../entities/Post");
+const sleep = (ms) => new Promise(res => setTimeout(res, ms));
 function getPosts(_a) {
     return __awaiter(this, arguments, void 0, function* ({ em }) {
         const posts = yield em.find(Post_1.Post, {});
+        yield sleep(3000);
         return posts;
     });
 }
