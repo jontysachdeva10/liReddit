@@ -140,3 +140,53 @@ export async function forgotPassword({ email }: { email:string }, { em, req, red
 
   return true;
 }
+
+export async function changePassword({ token, newPassword }: { token: string, newPassword: string }, { em, req, res, redisClient }: MyContext) {
+  if (newPassword.length <= 2) {
+    return {
+      user: null,
+      error: {
+        code: "INVALID_PASSWORD",
+        field: "newPassword",
+        message: "Length must be greater than 2.",
+      },
+    };
+  }
+
+  const userId = await redisClient.get(FORGOT_PASSWORD_PREFIX + token);
+  if(!userId) {
+    return {
+      user: null,
+      error: {
+        code: "EXPIRED_TOKEN",
+        field: "token",
+        message: "Token expired.",
+      },
+    };
+  }
+
+  const user = await em.findOne(User, { id: parseInt(userId) });
+  if(!user) {
+    return {
+      user: null,
+      error: {
+        code: "NOT_FOUND",
+        field: "token",
+        message: "User no longer exists.",
+      },
+    };
+  }
+
+  user.password = await argon2.hash(newPassword);
+  await em.persistAndFlush(user);
+
+  // delete the token once password is changed, so that user can only use token 1'ce to change password
+  await redisClient.del(FORGOT_PASSWORD_PREFIX + token)
+
+  // log in user after change password
+  req.session.userId = user.id;
+
+  return {
+    user
+  }
+}

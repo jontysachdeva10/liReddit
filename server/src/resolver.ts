@@ -1,6 +1,6 @@
 import { MyContext } from "./types";
 import { createPost, deletePost, getPostById, getPosts, updatePost } from "./db/posts";
-import { forgotPassword, getCurrentUser, getUsers, login, logout, registerUser } from "./db/user";
+import { changePassword, forgotPassword, getCurrentUser, getUsers, login, logout, registerUser } from "./db/user";
 
 // resolver params => (parent, args, contextValue, info)
 
@@ -24,6 +24,7 @@ export const resolvers = {
     register: async(_: any, { userInput }: { userInput: { username: string, email: string, password: string }}, { em, req, res, redisClient }: MyContext) => registerUser(userInput, { em, req, res, redisClient }),
     login: async(_: any, { usernameOrEmail, password }: {usernameOrEmail: string, password: string}, { em, req, res, redisClient }: MyContext ) => login({ usernameOrEmail, password }, { em, req, res, redisClient }),
     logout: async(_:any, __:any, {em, req, res, redisClient}: MyContext) => logout({em, req, res, redisClient}),
-    forgotPassword: async(_:any, { email }: { email: string }, {em, req, res, redisClient}: MyContext) => forgotPassword({ email }, { em, req, res, redisClient })
+    forgotPassword: async(_:any, { email }: { email: string }, {em, req, res, redisClient}: MyContext) => forgotPassword({ email }, { em, req, res, redisClient }),
+    changePassword: async(_:any, { token, newPassword }: { token: string, newPassword: string }, { em, req, res, redisClient }: MyContext) => changePassword({ token, newPassword }, { em, req, res, redisClient })
   },
 };

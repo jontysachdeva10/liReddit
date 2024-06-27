@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@chakra-ui/react";
+import { Button, Flex, Link } from "@chakra-ui/react";
 import InputField from "@components/InputField";
 import Wrapper from "@components/Wrapper";
 import { useLoginMutation } from "@gql/graphql";
@@ -18,10 +18,10 @@ const Login: React.FC<{}> = () => {
         initialValues={{ usernameOrEmail: "", password: "" }}
         onSubmit={async (values, { setErrors }) => {
           const response = await login(values);
-          
+
           if (response.data?.login.error) {
             setErrors(toErrorMap(response.data.login.error));
-          } else if(response.data?.login.user) {
+          } else if (response.data?.login.user) {
             router.push("/");
           }
         }}
@@ -40,6 +40,10 @@ const Login: React.FC<{}> = () => {
               label="Password"
               type="password"
             />
+
+            <Flex>
+              <Link ml={'auto'} href="/forgot-password">Forgot Password?</Link>
+            </Flex>
 
             <Button
               mt={4}

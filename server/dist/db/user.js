@@ -32,7 +32,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.forgotPassword = exports.logout = exports.login = exports.getCurrentUser = exports.getUsers = exports.registerUser = void 0;
+exports.changePassword = exports.forgotPassword = exports.logout = exports.login = exports.getCurrentUser = exports.getUsers = exports.registerUser = void 0;
 const User_1 = require("../entities/User");
 const argon2 = __importStar(require("argon2"));
 const constants_1 = require("../constants");
@@ -152,3 +152,49 @@ function forgotPassword(_a, _b) {
     });
 }
 exports.forgotPassword = forgotPassword;
+function changePassword(_a, _b) {
+    return __awaiter(this, arguments, void 0, function* ({ token, newPassword }, { em, req, res, redisClient }) {
+        if (newPassword.length <= 2) {
+            return {
+                user: null,
+                error: {
+                    code: "INVALID_PASSWORD",
+                    field: "newPassword",
+                    message: "Length must be greater than 2.",
+                },
+            };
+        }
+        const userId = yield redisClient.get(constants_1.FORGOT_PASSWORD_PREFIX + token);
+        if (!userId) {
+            return {
+                user: null,
+                error: {
+                    code: "EXPIRED_TOKEN",
+                    field: "token",
+                    message: "Token expired.",
+                },
+            };
+        }
+        const user = yield em.findOne(User_1.User, { id: parseInt(userId) });
+        if (!user) {
+            return {
+                user: null,
+                error: {
+                    code: "NOT_FOUND",
+                    field: "token",
+                    message: "User no longer exists.",
+                },
+            };
+        }
+        user.password = yield argon2.hash(newPassword);
+        yield em.persistAndFlush(user);
+        // delete the token once password is changed, so that user can only use token 1'ce to change password
+        yield redisClient.del(constants_1.FORGOT_PASSWORD_PREFIX + token);
+        // log in user after change password
+        req.session.userId = user.id;
+        return {
+            user
+        };
+    });
+}
+exports.changePassword = changePassword;

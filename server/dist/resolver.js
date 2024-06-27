@@ -31,6 +31,7 @@ exports.resolvers = {
         register: (_8, _m, _o) => __awaiter(void 0, [_8, _m, _o], void 0, function* (_, { userInput }, { em, req, res, redisClient }) { return (0, user_1.registerUser)(userInput, { em, req, res, redisClient }); }),
         login: (_9, _p, _q) => __awaiter(void 0, [_9, _p, _q], void 0, function* (_, { usernameOrEmail, password }, { em, req, res, redisClient }) { return (0, user_1.login)({ usernameOrEmail, password }, { em, req, res, redisClient }); }),
         logout: (_10, __4, _r) => __awaiter(void 0, [_10, __4, _r], void 0, function* (_, __, { em, req, res, redisClient }) { return (0, user_1.logout)({ em, req, res, redisClient }); }),
-        forgotPassword: (_11, _s, _t) => __awaiter(void 0, [_11, _s, _t], void 0, function* (_, { email }, { em, req, res, redisClient }) { return (0, user_1.forgotPassword)({ email }, { em, req, res, redisClient }); })
+        forgotPassword: (_11, _s, _t) => __awaiter(void 0, [_11, _s, _t], void 0, function* (_, { email }, { em, req, res, redisClient }) { return (0, user_1.forgotPassword)({ email }, { em, req, res, redisClient }); }),
+        changePassword: (_12, _u, _v) => __awaiter(void 0, [_12, _u, _v], void 0, function* (_, { token, newPassword }, { em, req, res, redisClient }) { return (0, user_1.changePassword)({ token, newPassword }, { em, req, res, redisClient }); })
     },
 };
