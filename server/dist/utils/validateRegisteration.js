@@ -4,7 +4,6 @@ exports.validateRegisteration = void 0;
 const validateRegisteration = (username, email, password) => {
     if (username.length <= 2) {
         return {
-            user: null,
             error: {
                 code: "INVALID_USERNAME",
                 field: "username",
@@ -14,7 +13,6 @@ const validateRegisteration = (username, email, password) => {
     }
     if (username.includes('@')) {
         return {
-            user: null,
             error: {
                 code: "INVALID_USERNAME",
                 field: "username",
@@ -24,7 +22,6 @@ const validateRegisteration = (username, email, password) => {
     }
     if (!email.includes("@")) {
         return {
-            user: null,
             error: {
                 code: "INVALID_EMAIL",
                 field: "email",
@@ -34,7 +31,6 @@ const validateRegisteration = (username, email, password) => {
     }
     if (password.length <= 2) {
         return {
-            user: null,
             error: {
                 code: "INVALID_PASSWORD",
                 field: "password",

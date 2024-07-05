@@ -5,6 +5,8 @@ import { COOKIE_NAME, FORGOT_PASSWORD_PREFIX } from "../constants";
 import { validateRegisteration } from "../utils/validateRegisteration";
 import { sendEmail } from "../utils/sendEmail";
 import { v4 } from "uuid";
+import { AppDataSource } from "../typeorm.config";
+import { UserResponse } from "../customResponse/userResponse";
 
 export async function registerUser(
   {
@@ -12,21 +14,36 @@ export async function registerUser(
     email,
     password,
   }: { username: string; email: string; password: string },
-  { em, req }: MyContext
-) {
-
+  { req }: MyContext
+): Promise<UserResponse> {
   const error = validateRegisteration(username, email, password);
-  if(error) return error ;
+  if (error) return error;
 
   const hashedPassword = await argon2.hash(password);
-
-  const newUser = new User();
-  newUser.username = username;
-  newUser.email = email;
-  newUser.password = hashedPassword;
-
+  let user;
   try {
-    await em.persistAndFlush(newUser);
+    // User.create({
+    //   username,
+    //   email,
+    //   password: hashedPassword,
+    // }).save()
+
+    //  OR
+
+    // Insert Query Builder
+    const result = await AppDataSource.createQueryBuilder()
+      .insert()
+      .into(User)
+      .values([
+        {
+          username,
+          email,
+          password: hashedPassword,
+        },
+      ])
+      .returning("*")
+      .execute();
+    user = result.raw[0];
   } catch (err: any) {
     if (err.code === "23505") {
       return {
@@ -41,34 +58,29 @@ export async function registerUser(
   }
 
   // store user id session, this will set cookie on the user & keep them logged in
-  req.session.userId = newUser.id;
+  req.session.userId = user.id;
 
   return {
-    user: newUser,
+    user,
   };
 }
 
-export async function getUsers({ em }: MyContext): Promise<User[] | null> {
-  const users = await em.find(User, {});
-  return users;
+export async function getUsers(): Promise<User[] | null> {
+  return await User.find();
 }
 
-export async function getCurrentUser({
-  em,
-  req,
-}: MyContext): Promise<User | null> {
+export async function getCurrentUser({ req }: MyContext): Promise<User | null> {
   // User not logged in
   if (!req.session.userId) return null;
-  const user = await em.findOne(User, { id: req.session.userId });
+  const user = await User.findOneBy({ id: req.session.userId });
   return user;
 }
 
 export async function login(
   { usernameOrEmail, password }: { usernameOrEmail: string; password: string },
-  { em, req }: MyContext
-) {
-  const user = await em.findOne(
-    User,
+  { req }: MyContext
+): Promise<UserResponse> {
+  const user = await User.findOneBy(
     usernameOrEmail.includes("@")
       ? { email: usernameOrEmail }
       : { username: usernameOrEmail }
@@ -76,7 +88,6 @@ export async function login(
 
   if (!user) {
     return {
-      user: null,
       error: {
         code: "NOT_FOUND",
         field: "usernameOrEmail",
@@ -88,7 +99,6 @@ export async function login(
   const validatePassword = await argon2.verify(user.password, password);
   if (!validatePassword) {
     return {
-      user: null,
       error: {
         code: "INVALID_PASSWORD",
         field: "password",
@@ -102,11 +112,10 @@ export async function login(
 
   return {
     user,
-    error: null,
   };
 }
 
-export async function logout({ em, req, res }: MyContext) {
+export async function logout({ req, res }: MyContext): Promise<Boolean> {
   return new Promise((resolve) =>
     req.session.destroy((err) => {
       res.clearCookie(COOKIE_NAME);
@@ -121,10 +130,13 @@ export async function logout({ em, req, res }: MyContext) {
   );
 }
 
-export async function forgotPassword({ email }: { email:string }, { em, req, redisClient }: MyContext) {
-  const user = await em.findOne(User, { email });
-  
-  if(!user) {
+export async function forgotPassword(
+  { email }: { email: string },
+  { redisClient }: MyContext
+): Promise<Boolean> {
+  const user = await User.findOneBy({ email });
+
+  if (!user) {
     // email is not in DB
     return true;
   }
@@ -134,17 +146,19 @@ export async function forgotPassword({ email }: { email:string }, { em, req, red
 
   sendEmail(
     email,
-    'Reset Password',
+    "Reset Password",
     `<a href="http://localhost:3000/change-password/${token}">Reset Password</a>`
   );
 
   return true;
 }
 
-export async function changePassword({ token, newPassword }: { token: string, newPassword: string }, { em, req, res, redisClient }: MyContext) {
+export async function changePassword(
+  { token, newPassword }: { token: string; newPassword: string },
+  { req, res, redisClient }: MyContext
+): Promise<UserResponse> {
   if (newPassword.length <= 2) {
     return {
-      user: null,
       error: {
         code: "INVALID_PASSWORD",
         field: "newPassword",
@@ -154,9 +168,8 @@ export async function changePassword({ token, newPassword }: { token: string, ne
   }
 
   const userId = await redisClient.get(FORGOT_PASSWORD_PREFIX + token);
-  if(!userId) {
+  if (!userId) {
     return {
-      user: null,
       error: {
         code: "EXPIRED_TOKEN",
         field: "token",
@@ -165,10 +178,10 @@ export async function changePassword({ token, newPassword }: { token: string, ne
     };
   }
 
-  const user = await em.findOne(User, { id: parseInt(userId) });
-  if(!user) {
+  const userIdNum = parseInt(userId);
+  const user = await User.findOneBy({ id: userIdNum });
+  if (!user) {
     return {
-      user: null,
       error: {
         code: "NOT_FOUND",
         field: "token",
@@ -177,16 +190,18 @@ export async function changePassword({ token, newPassword }: { token: string, ne
     };
   }
 
-  user.password = await argon2.hash(newPassword);
-  await em.persistAndFlush(user);
+  await User.update(
+    { id: userIdNum },
+    { password: await argon2.hash(newPassword) }
+  );
 
   // delete the token once password is changed, so that user can only use token 1'ce to change password
-  await redisClient.del(FORGOT_PASSWORD_PREFIX + token)
+  await redisClient.del(FORGOT_PASSWORD_PREFIX + token);
 
   // log in user after change password
   req.session.userId = user.id;
 
   return {
-    user
-  }
+    user,
+  };
 }

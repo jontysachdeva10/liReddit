@@ -1,7 +1,7 @@
 'use client';
 
 import { Provider, createClient, fetchExchange } from "urql";
-import { Data, cacheExchange } from '@urql/exchange-graphcache';
+import { cacheExchange } from '@urql/exchange-graphcache';
 import { Providers } from "./providers";
 import { CurrentUserDocument, CurrentUserQuery, LoginMutation, LogoutMutation, RegisterMutation } from "@gql/graphql";
 

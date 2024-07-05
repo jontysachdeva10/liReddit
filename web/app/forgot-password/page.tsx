@@ -8,7 +8,7 @@ import { Form, Formik } from "formik";
 import { useState } from "react";
 
 const ForgotPassword:React.FC<{}> = () => {
-    const [complete, setComplete] = useState(false);
+  const [complete, setComplete] = useState(false);
   const [, forgotPassword] = useForgotPasswordMutation();
 
   return (
@@ -21,7 +21,7 @@ const ForgotPassword:React.FC<{}> = () => {
         }}
       >
         {({ isSubmitting }) => (
-          complete ? <Box>If an account with taht email exisits, we have sent you an email.</Box> :  
+          complete ? <Box>If an account with that email exisits, we have sent you an email.</Box> :  
           <Form>
             <InputField
               name="email"

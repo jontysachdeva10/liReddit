@@ -39,18 +39,35 @@ const constants_1 = require("../constants");
 const validateRegisteration_1 = require("../utils/validateRegisteration");
 const sendEmail_1 = require("../utils/sendEmail");
 const uuid_1 = require("uuid");
+const typeorm_config_1 = require("../typeorm.config");
 function registerUser(_a, _b) {
-    return __awaiter(this, arguments, void 0, function* ({ username, email, password, }, { em, req }) {
+    return __awaiter(this, arguments, void 0, function* ({ username, email, password, }, { req }) {
         const error = (0, validateRegisteration_1.validateRegisteration)(username, email, password);
         if (error)
             return error;
         const hashedPassword = yield argon2.hash(password);
-        const newUser = new User_1.User();
-        newUser.username = username;
-        newUser.email = email;
-        newUser.password = hashedPassword;
+        let user;
         try {
-            yield em.persistAndFlush(newUser);
+            // User.create({
+            //   username,
+            //   email,
+            //   password: hashedPassword,
+            // }).save()
+            //  OR
+            // Insert Query Builder
+            const result = yield typeorm_config_1.AppDataSource.createQueryBuilder()
+                .insert()
+                .into(User_1.User)
+                .values([
+                {
+                    username,
+                    email,
+                    password: hashedPassword,
+                },
+            ])
+                .returning("*")
+                .execute();
+            user = result.raw[0];
         }
         catch (err) {
             if (err.code === "23505") {
@@ -65,38 +82,36 @@ function registerUser(_a, _b) {
             console.error(err.message);
         }
         // store user id session, this will set cookie on the user & keep them logged in
-        req.session.userId = newUser.id;
+        req.session.userId = user.id;
         return {
-            user: newUser,
+            user,
         };
     });
 }
 exports.registerUser = registerUser;
-function getUsers(_a) {
-    return __awaiter(this, arguments, void 0, function* ({ em }) {
-        const users = yield em.find(User_1.User, {});
-        return users;
+function getUsers() {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield User_1.User.find();
     });
 }
 exports.getUsers = getUsers;
 function getCurrentUser(_a) {
-    return __awaiter(this, arguments, void 0, function* ({ em, req, }) {
+    return __awaiter(this, arguments, void 0, function* ({ req }) {
         // User not logged in
         if (!req.session.userId)
             return null;
-        const user = yield em.findOne(User_1.User, { id: req.session.userId });
+        const user = yield User_1.User.findOneBy({ id: req.session.userId });
         return user;
     });
 }
 exports.getCurrentUser = getCurrentUser;
 function login(_a, _b) {
-    return __awaiter(this, arguments, void 0, function* ({ usernameOrEmail, password }, { em, req }) {
-        const user = yield em.findOne(User_1.User, usernameOrEmail.includes("@")
+    return __awaiter(this, arguments, void 0, function* ({ usernameOrEmail, password }, { req }) {
+        const user = yield User_1.User.findOneBy(usernameOrEmail.includes("@")
             ? { email: usernameOrEmail }
             : { username: usernameOrEmail });
         if (!user) {
             return {
-                user: null,
                 error: {
                     code: "NOT_FOUND",
                     field: "usernameOrEmail",
@@ -107,7 +122,6 @@ function login(_a, _b) {
         const validatePassword = yield argon2.verify(user.password, password);
         if (!validatePassword) {
             return {
-                user: null,
                 error: {
                     code: "INVALID_PASSWORD",
                     field: "password",
@@ -119,13 +133,12 @@ function login(_a, _b) {
         req.session.userId = user.id;
         return {
             user,
-            error: null,
         };
     });
 }
 exports.login = login;
 function logout(_a) {
-    return __awaiter(this, arguments, void 0, function* ({ em, req, res }) {
+    return __awaiter(this, arguments, void 0, function* ({ req, res }) {
         return new Promise((resolve) => req.session.destroy((err) => {
             res.clearCookie(constants_1.COOKIE_NAME);
             if (err) {
@@ -139,24 +152,23 @@ function logout(_a) {
 }
 exports.logout = logout;
 function forgotPassword(_a, _b) {
-    return __awaiter(this, arguments, void 0, function* ({ email }, { em, req, redisClient }) {
-        const user = yield em.findOne(User_1.User, { email });
+    return __awaiter(this, arguments, void 0, function* ({ email }, { redisClient }) {
+        const user = yield User_1.User.findOneBy({ email });
         if (!user) {
             // email is not in DB
             return true;
         }
         const token = (0, uuid_1.v4)();
         yield redisClient.set(constants_1.FORGOT_PASSWORD_PREFIX + token, user.id);
-        (0, sendEmail_1.sendEmail)(email, 'Reset Password', `<a href="http://localhost:3000/change-password/${token}">Reset Password</a>`);
+        (0, sendEmail_1.sendEmail)(email, "Reset Password", `<a href="http://localhost:3000/change-password/${token}">Reset Password</a>`);
         return true;
     });
 }
 exports.forgotPassword = forgotPassword;
 function changePassword(_a, _b) {
-    return __awaiter(this, arguments, void 0, function* ({ token, newPassword }, { em, req, res, redisClient }) {
+    return __awaiter(this, arguments, void 0, function* ({ token, newPassword }, { req, res, redisClient }) {
         if (newPassword.length <= 2) {
             return {
-                user: null,
                 error: {
                     code: "INVALID_PASSWORD",
                     field: "newPassword",
@@ -167,7 +179,6 @@ function changePassword(_a, _b) {
         const userId = yield redisClient.get(constants_1.FORGOT_PASSWORD_PREFIX + token);
         if (!userId) {
             return {
-                user: null,
                 error: {
                     code: "EXPIRED_TOKEN",
                     field: "token",
@@ -175,10 +186,10 @@ function changePassword(_a, _b) {
                 },
             };
         }
-        const user = yield em.findOne(User_1.User, { id: parseInt(userId) });
+        const userIdNum = parseInt(userId);
+        const user = yield User_1.User.findOneBy({ id: userIdNum });
         if (!user) {
             return {
-                user: null,
                 error: {
                     code: "NOT_FOUND",
                     field: "token",
@@ -186,14 +197,13 @@ function changePassword(_a, _b) {
                 },
             };
         }
-        user.password = yield argon2.hash(newPassword);
-        yield em.persistAndFlush(user);
+        yield User_1.User.update({ id: userIdNum }, { password: yield argon2.hash(newPassword) });
         // delete the token once password is changed, so that user can only use token 1'ce to change password
         yield redisClient.del(constants_1.FORGOT_PASSWORD_PREFIX + token);
         // log in user after change password
         req.session.userId = user.id;
         return {
-            user
+            user,
         };
     });
 }
