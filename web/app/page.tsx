@@ -1,18 +1,18 @@
 'use client';
 
-import Nav from "@components/Nav"
+import { Link } from "@chakra-ui/react";
+import WrapperWithNav from "@components/WrapperWithNav";
 import { usePostsQuery } from "@gql/graphql";
 
 const Home = () => {
   const [{ data }] = usePostsQuery();
 
   return (
-    <>
-      <Nav />
-      <div>Home</div>
+    <WrapperWithNav variant="small">
+      <Link href="/create-post">Create Post</Link>
       <br />
       {!data ? <div>loading...</div> : data.posts.map(p => <div key={p.id}>{p.title}</div>)}
-    </>
+    </WrapperWithNav>
   )
 }
 

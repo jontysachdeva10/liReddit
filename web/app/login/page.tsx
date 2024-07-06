@@ -6,12 +6,13 @@ import Wrapper from "@components/Wrapper";
 import { useLoginMutation } from "@gql/graphql";
 import { toErrorMap } from "@utils/toErrorMap";
 import { Form, Formik } from "formik";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const Login: React.FC<{}> = () => {
   const router = useRouter();
+  const queryParams = useSearchParams()
   const [, login] = useLoginMutation();
-
+  
   return (
     <Wrapper variant="small">
       <Formik
@@ -22,7 +23,7 @@ const Login: React.FC<{}> = () => {
           if (response.data?.login.error) {
             setErrors(toErrorMap(response.data.login.error));
           } else if (response.data?.login.user) {
-            router.push("/");
+            router.push(queryParams.get("next") || "/");
           }
         }}
       >

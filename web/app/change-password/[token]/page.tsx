@@ -7,29 +7,25 @@ import Wrapper from "@components/Wrapper";
 import { useChangePasswordMutation } from "@gql/graphql";
 import { toErrorMap } from "@utils/toErrorMap";
 import { Form, Formik } from "formik";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import NextLink from 'next/link';
+import { NextPage } from "next";
 
-interface ChangePasswordProps {
-  params: {
-    token: string;
-  };
-}
 
-const ChangePassword: React.FC<ChangePasswordProps> = ({ params }) => {
-  const { token } = params;
+const ChangePassword: NextPage = () => {
   const router = useRouter();
   const [, changePassword] = useChangePasswordMutation();
   const [tokenError, setTokenError] = useState("");
-
+  const queryParams = useSearchParams();
+  
   return (
     <Wrapper variant="small">
       <Formik
         initialValues={{ newPassword: "" }}
         onSubmit={async (values, { setErrors }) => {
           const response = await changePassword({
-            token,
+            token: queryParams.get("token") || '',
             newPassword: values.newPassword,
           });
 

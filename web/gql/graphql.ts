@@ -17,6 +17,8 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
+  /** A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.This scalar is serialized to a string in ISO 8601 format and parsed from a string in ISO 8601 format. */
+  DateTimeISO: { input: any; output: any; }
 };
 
 export type Error = {
@@ -28,13 +30,13 @@ export type Error = {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  changePassword?: Maybe<UserResponse>;
-  createPost?: Maybe<Post>;
-  deletePost?: Maybe<Post>;
+  changePassword: UserResponse;
+  createPost: Post;
+  deletePost: Scalars['Boolean']['output'];
   forgotPassword: Scalars['Boolean']['output'];
-  login?: Maybe<UserResponse>;
+  login: UserResponse;
   logout: Scalars['Boolean']['output'];
-  register?: Maybe<UserResponse>;
+  register: UserResponse;
   updatePost?: Maybe<Post>;
 };
 
@@ -51,7 +53,7 @@ export type MutationCreatePostArgs = {
 
 
 export type MutationDeletePostArgs = {
-  id: Scalars['ID']['input'];
+  id: Scalars['Float']['input'];
 };
 
 
@@ -72,38 +74,48 @@ export type MutationRegisterArgs = {
 
 
 export type MutationUpdatePostArgs = {
-  id: Scalars['ID']['input'];
+  id: Scalars['Float']['input'];
   postInput: PostInput;
 };
 
 export type Post = {
   __typename?: 'Post';
-  id: Scalars['ID']['output'];
-  title?: Maybe<Scalars['String']['output']>;
+  author: User;
+  authorId: Scalars['Float']['output'];
+  createdAt: Scalars['DateTimeISO']['output'];
+  id: Scalars['Float']['output'];
+  points: Scalars['Float']['output'];
+  text: Scalars['String']['output'];
+  title: Scalars['String']['output'];
+  updatedAt: Scalars['DateTimeISO']['output'];
 };
 
 export type PostInput = {
-  title?: InputMaybe<Scalars['String']['input']>;
+  text: Scalars['String']['input'];
+  title: Scalars['String']['input'];
 };
 
 export type Query = {
   __typename?: 'Query';
-  currentUser?: Maybe<User>;
+  currentUser: User;
   post?: Maybe<Post>;
-  posts?: Maybe<Array<Maybe<Post>>>;
-  users?: Maybe<Array<Maybe<User>>>;
+  posts: Array<Post>;
+  users: Array<User>;
 };
 
 
 export type QueryPostArgs = {
-  id: Scalars['ID']['input'];
+  id: Scalars['Float']['input'];
 };
 
 export type User = {
   __typename?: 'User';
+  createdAt: Scalars['DateTimeISO']['output'];
   email: Scalars['String']['output'];
-  id: Scalars['ID']['output'];
+  id: Scalars['Float']['output'];
   password: Scalars['String']['output'];
+  posts: Post;
+  updatedAt: Scalars['DateTimeISO']['output'];
   username: Scalars['String']['output'];
 };
 
@@ -125,7 +137,14 @@ export type ChangePasswordMutationVariables = Exact<{
 }>;
 
 
-export type ChangePasswordMutation = { __typename?: 'Mutation', changePassword?: { __typename?: 'UserResponse', user?: { __typename?: 'User', id: string, email: string, username: string, password: string } | null, error?: { __typename?: 'Error', code: string, field: string, message: string } | null } | null };
+export type ChangePasswordMutation = { __typename?: 'Mutation', changePassword: { __typename?: 'UserResponse', user?: { __typename?: 'User', id: number, email: string, username: string, password: string } | null, error?: { __typename?: 'Error', code: string, field: string, message: string } | null } };
+
+export type CreatePostMutationVariables = Exact<{
+  postInput: PostInput;
+}>;
+
+
+export type CreatePostMutation = { __typename?: 'Mutation', createPost: { __typename?: 'Post', id: number, title: string, text: string, points: number, authorId: number } };
 
 export type ForgotPasswordMutationVariables = Exact<{
   email: Scalars['String']['input'];
@@ -140,7 +159,7 @@ export type LoginMutationVariables = Exact<{
 }>;
 
 
-export type LoginMutation = { __typename?: 'Mutation', login?: { __typename?: 'UserResponse', user?: { __typename?: 'User', id: string, username: string, password: string } | null, error?: { __typename?: 'Error', code: string, field: string, message: string } | null } | null };
+export type LoginMutation = { __typename?: 'Mutation', login: { __typename?: 'UserResponse', user?: { __typename?: 'User', id: number, username: string, password: string } | null, error?: { __typename?: 'Error', code: string, field: string, message: string } | null } };
 
 export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
 
@@ -152,17 +171,18 @@ export type RegisterMutationVariables = Exact<{
 }>;
 
 
-export type RegisterMutation = { __typename?: 'Mutation', register?: { __typename?: 'UserResponse', user?: { __typename?: 'User', id: string, username: string, email: string, password: string } | null, error?: { __typename?: 'Error', code: string, field: string, message: string } | null } | null };
+export type RegisterMutation = { __typename?: 'Mutation', register: { __typename?: 'UserResponse', user?: { __typename?: 'User', id: number, username: string, email: string, password: string } | null, error?: { __typename?: 'Error', code: string, field: string, message: string } | null } };
 
 export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type CurrentUserQuery = { __typename?: 'Query', currentUser?: { __typename?: 'User', id: string, username: string, password: string } | null };
+export type CurrentUserQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: number, username: string, password: string } };
 
 export type PostsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type PostsQuery = { __typename?: 'Query', posts?: Array<{ __typename?: 'Post', id: string, title?: string | null } | null> | null };
+export type PostsQuery = { __typename?: 'Query', posts: Array<{ __typename?: 'Post', id: number, title: string }> };
+
 
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
@@ -171,6 +191,8 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
+  /** A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.This scalar is serialized to a string in ISO 8601 format and parsed from a string in ISO 8601 format. */
+  DateTimeISO: { input: any; output: any; }
 };
 
 export type Error = {
@@ -182,13 +204,13 @@ export type Error = {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  changePassword?: Maybe<UserResponse>;
-  createPost?: Maybe<Post>;
-  deletePost?: Maybe<Post>;
+  changePassword: UserResponse;
+  createPost: Post;
+  deletePost: Scalars['Boolean']['output'];
   forgotPassword: Scalars['Boolean']['output'];
-  login?: Maybe<UserResponse>;
+  login: UserResponse;
   logout: Scalars['Boolean']['output'];
-  register?: Maybe<UserResponse>;
+  register: UserResponse;
   updatePost?: Maybe<Post>;
 };
 
@@ -205,7 +227,7 @@ export type MutationCreatePostArgs = {
 
 
 export type MutationDeletePostArgs = {
-  id: Scalars['ID']['input'];
+  id: Scalars['Float']['input'];
 };
 
 
@@ -226,38 +248,48 @@ export type MutationRegisterArgs = {
 
 
 export type MutationUpdatePostArgs = {
-  id: Scalars['ID']['input'];
+  id: Scalars['Float']['input'];
   postInput: PostInput;
 };
 
 export type Post = {
   __typename?: 'Post';
-  id: Scalars['ID']['output'];
-  title?: Maybe<Scalars['String']['output']>;
+  author: User;
+  authorId: Scalars['Float']['output'];
+  createdAt: Scalars['DateTimeISO']['output'];
+  id: Scalars['Float']['output'];
+  points: Scalars['Float']['output'];
+  text: Scalars['String']['output'];
+  title: Scalars['String']['output'];
+  updatedAt: Scalars['DateTimeISO']['output'];
 };
 
 export type PostInput = {
-  title?: InputMaybe<Scalars['String']['input']>;
+  text: Scalars['String']['input'];
+  title: Scalars['String']['input'];
 };
 
 export type Query = {
   __typename?: 'Query';
-  currentUser?: Maybe<User>;
+  currentUser: User;
   post?: Maybe<Post>;
-  posts?: Maybe<Array<Maybe<Post>>>;
-  users?: Maybe<Array<Maybe<User>>>;
+  posts: Array<Post>;
+  users: Array<User>;
 };
 
 
 export type QueryPostArgs = {
-  id: Scalars['ID']['input'];
+  id: Scalars['Float']['input'];
 };
 
 export type User = {
   __typename?: 'User';
+  createdAt: Scalars['DateTimeISO']['output'];
   email: Scalars['String']['output'];
-  id: Scalars['ID']['output'];
+  id: Scalars['Float']['output'];
   password: Scalars['String']['output'];
+  posts: Post;
+  updatedAt: Scalars['DateTimeISO']['output'];
   username: Scalars['String']['output'];
 };
 
@@ -279,7 +311,14 @@ export type ChangePasswordMutationVariables = Exact<{
 }>;
 
 
-export type ChangePasswordMutation = { __typename?: 'Mutation', changePassword?: { __typename?: 'UserResponse', user?: { __typename?: 'User', id: string, email: string, username: string, password: string } | null, error?: { __typename?: 'Error', code: string, field: string, message: string } | null } | null };
+export type ChangePasswordMutation = { __typename?: 'Mutation', changePassword: { __typename?: 'UserResponse', user?: { __typename?: 'User', id: number, email: string, username: string, password: string } | null, error?: { __typename?: 'Error', code: string, field: string, message: string } | null } };
+
+export type CreatePostMutationVariables = Exact<{
+  postInput: PostInput;
+}>;
+
+
+export type CreatePostMutation = { __typename?: 'Mutation', createPost: { __typename?: 'Post', id: number, title: string, text: string, points: number, authorId: number } };
 
 export type ForgotPasswordMutationVariables = Exact<{
   email: Scalars['String']['input'];
@@ -294,7 +333,7 @@ export type LoginMutationVariables = Exact<{
 }>;
 
 
-export type LoginMutation = { __typename?: 'Mutation', login?: { __typename?: 'UserResponse', user?: { __typename?: 'User', id: string, username: string, password: string } | null, error?: { __typename?: 'Error', code: string, field: string, message: string } | null } | null };
+export type LoginMutation = { __typename?: 'Mutation', login: { __typename?: 'UserResponse', user?: { __typename?: 'User', id: number, username: string, password: string } | null, error?: { __typename?: 'Error', code: string, field: string, message: string } | null } };
 
 export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
 
@@ -306,17 +345,17 @@ export type RegisterMutationVariables = Exact<{
 }>;
 
 
-export type RegisterMutation = { __typename?: 'Mutation', register?: { __typename?: 'UserResponse', user?: { __typename?: 'User', id: string, username: string, email: string, password: string } | null, error?: { __typename?: 'Error', code: string, field: string, message: string } | null } | null };
+export type RegisterMutation = { __typename?: 'Mutation', register: { __typename?: 'UserResponse', user?: { __typename?: 'User', id: number, username: string, email: string, password: string } | null, error?: { __typename?: 'Error', code: string, field: string, message: string } | null } };
 
 export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type CurrentUserQuery = { __typename?: 'Query', currentUser?: { __typename?: 'User', id: string, username: string, password: string } | null };
+export type CurrentUserQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: number, username: string, password: string } };
 
 export type PostsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type PostsQuery = { __typename?: 'Query', posts?: Array<{ __typename?: 'Post', id: string, title?: string | null } | null> | null };
+export type PostsQuery = { __typename?: 'Query', posts: Array<{ __typename?: 'Post', id: number, title: string }> };
 
 
 export const ChangePasswordDocument = gql`
@@ -339,6 +378,21 @@ export const ChangePasswordDocument = gql`
 
 export function useChangePasswordMutation() {
   return Urql.useMutation<ChangePasswordMutation, ChangePasswordMutationVariables>(ChangePasswordDocument);
+};
+export const CreatePostDocument = gql`
+    mutation CreatePost($postInput: PostInput!) {
+  createPost(postInput: $postInput) {
+    id
+    title
+    text
+    points
+    authorId
+  }
+}
+    `;
+
+export function useCreatePostMutation() {
+  return Urql.useMutation<CreatePostMutation, CreatePostMutationVariables>(CreatePostDocument);
 };
 export const ForgotPasswordDocument = gql`
     mutation ForgotPassword($email: String!) {
