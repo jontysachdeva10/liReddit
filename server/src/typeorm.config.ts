@@ -12,6 +12,7 @@ export const AppDataSource = new DataSource({
   database: "lireddit2",
   synchronize: true, // Disable in production
   logging: false,
+  migrations: [path.join(__dirname, './migrations/*')],
   entities: [Post, User], // Add all your entities here
 });
 

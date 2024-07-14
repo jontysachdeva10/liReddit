@@ -11,9 +11,24 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deletePost = exports.updatePost = exports.createPost = exports.getPostById = exports.getPosts = void 0;
 const Post_1 = require("../entities/Post");
-function getPosts() {
+const typeorm_config_1 = require("../typeorm.config");
+function getPosts(limit, cursor) {
     return __awaiter(this, void 0, void 0, function* () {
-        const posts = yield Post_1.Post.find();
+        // const posts = await Post.find();
+        // return posts;
+        const realLimit = Math.min(50, limit);
+        const qb = typeorm_config_1.AppDataSource.getRepository(Post_1.Post)
+            .createQueryBuilder("posts")
+            .orderBy('"createdAt"', "DESC")
+            .take(realLimit);
+        if (cursor) {
+            const cursorDate = new Date(cursor);
+            if (isNaN(cursorDate.getTime())) {
+                throw new Error(`Invalid cursor date: ${cursor}`);
+            }
+            qb.where('"createdAt" < :cursor', { cursor: cursorDate });
+        }
+        const posts = yield qb.getMany();
         return posts;
     });
 }

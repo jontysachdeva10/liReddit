@@ -31,8 +31,11 @@ class PostInput {
 @Resolver()
 export class PostResolver {
   @Query(() => [Post])
-  async posts() {
-    return getPosts();
+  async posts(
+    @Arg("limit") limit: number,
+    @Arg("cursor", () => String, { nullable: true }) cursor: string | null
+  ) {
+    return getPosts(limit, cursor);
   }
 
   @Query(() => Post, { nullable: true })

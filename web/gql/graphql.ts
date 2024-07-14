@@ -108,6 +108,12 @@ export type QueryPostArgs = {
   id: Scalars['Float']['input'];
 };
 
+
+export type QueryPostsArgs = {
+  cursor?: InputMaybe<Scalars['String']['input']>;
+  limit: Scalars['Float']['input'];
+};
+
 export type User = {
   __typename?: 'User';
   createdAt: Scalars['DateTimeISO']['output'];
@@ -178,11 +184,13 @@ export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type CurrentUserQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: number, username: string, password: string } };
 
-export type PostsQueryVariables = Exact<{ [key: string]: never; }>;
+export type PostsQueryVariables = Exact<{
+  limit: Scalars['Float']['input'];
+  cursor?: InputMaybe<Scalars['String']['input']>;
+}>;
 
 
-export type PostsQuery = { __typename?: 'Query', posts: Array<{ __typename?: 'Post', id: number, title: string }> };
-
+export type PostsQuery = { __typename?: 'Query', posts: Array<{ __typename?: 'Post', id: number, createdAt: any, updatedAt: any, title: string, text: string }> };
 
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
@@ -282,6 +290,12 @@ export type QueryPostArgs = {
   id: Scalars['Float']['input'];
 };
 
+
+export type QueryPostsArgs = {
+  cursor?: InputMaybe<Scalars['String']['input']>;
+  limit: Scalars['Float']['input'];
+};
+
 export type User = {
   __typename?: 'User';
   createdAt: Scalars['DateTimeISO']['output'];
@@ -352,10 +366,13 @@ export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type CurrentUserQuery = { __typename?: 'Query', currentUser: { __typename?: 'User', id: number, username: string, password: string } };
 
-export type PostsQueryVariables = Exact<{ [key: string]: never; }>;
+export type PostsQueryVariables = Exact<{
+  limit: Scalars['Float']['input'];
+  cursor?: InputMaybe<Scalars['String']['input']>;
+}>;
 
 
-export type PostsQuery = { __typename?: 'Query', posts: Array<{ __typename?: 'Post', id: number, title: string }> };
+export type PostsQuery = { __typename?: 'Query', posts: Array<{ __typename?: 'Post', id: number, createdAt: any, updatedAt: any, title: string, text: string }> };
 
 
 export const ChangePasswordDocument = gql`
@@ -467,14 +484,17 @@ export function useCurrentUserQuery(options?: Omit<Urql.UseQueryArgs<CurrentUser
   return Urql.useQuery<CurrentUserQuery, CurrentUserQueryVariables>({ query: CurrentUserDocument, ...options });
 };
 export const PostsDocument = gql`
-    query Posts {
-  posts {
+    query Posts($limit: Float!, $cursor: String) {
+  posts(limit: $limit, cursor: $cursor) {
     id
+    createdAt
+    updatedAt
     title
+    text
   }
 }
     `;
 
-export function usePostsQuery(options?: Omit<Urql.UseQueryArgs<PostsQueryVariables>, 'query'>) {
+export function usePostsQuery(options: Omit<Urql.UseQueryArgs<PostsQueryVariables>, 'query'>) {
   return Urql.useQuery<PostsQuery, PostsQueryVariables>({ query: PostsDocument, ...options });
 };

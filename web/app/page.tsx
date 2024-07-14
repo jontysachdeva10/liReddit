@@ -5,7 +5,11 @@ import WrapperWithNav from "@components/WrapperWithNav";
 import { usePostsQuery } from "@gql/graphql";
 
 const Home = () => {
-  const [{ data }] = usePostsQuery();
+  const [{ data }] = usePostsQuery({
+    variables: {
+      limit: 10,
+    }
+  });
 
   return (
     <WrapperWithNav variant="small">

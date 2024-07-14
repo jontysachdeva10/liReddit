@@ -1,4 +1,5 @@
 import { Post } from "../entities/Post";
+import { AppDataSource } from "../typeorm.config";
 import { MyContext } from "../types";
 
 type InputType = {
@@ -6,9 +7,28 @@ type InputType = {
   text: string
 }
 
-export async function getPosts(): Promise<Post[]> {
-  const posts = await Post.find();
-  return posts;
+export async function getPosts(
+  limit: number,
+  cursor: string | null
+): Promise<Post[]> {
+  // const posts = await Post.find();
+  // return posts;
+  const realLimit = Math.min(50, limit);
+  const qb = AppDataSource.getRepository(Post)
+    .createQueryBuilder("posts")
+    .orderBy('"createdAt"', "DESC")
+    .take(realLimit)
+
+    if(cursor) {
+      const cursorDate = new Date(cursor);
+      if (isNaN(cursorDate.getTime())) {
+        throw new Error(`Invalid cursor date: ${cursor}`);
+      }
+      qb.where('"createdAt" < :cursor', { cursor: cursorDate })
+    }
+
+    const posts = await qb.getMany();
+    return posts;
 }
 
 export async function getPostById(id: number): Promise<Post | null> {

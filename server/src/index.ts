@@ -18,6 +18,7 @@ const main = async () => {
 
   // Initialize TypeORM
   await AppDataSource.initialize();
+  await AppDataSource.runMigrations();
 
   // create redis client
   const RedisStore = connectRedis(session);

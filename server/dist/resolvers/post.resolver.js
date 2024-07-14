@@ -40,9 +40,9 @@ PostInput = __decorate([
     (0, type_graphql_1.InputType)()
 ], PostInput);
 let PostResolver = class PostResolver {
-    posts() {
+    posts(limit, cursor) {
         return __awaiter(this, void 0, void 0, function* () {
-            return (0, posts_1.getPosts)();
+            return (0, posts_1.getPosts)(limit, cursor);
         });
     }
     post(id) {
@@ -69,8 +69,10 @@ let PostResolver = class PostResolver {
 exports.PostResolver = PostResolver;
 __decorate([
     (0, type_graphql_1.Query)(() => [Post_1.Post]),
+    __param(0, (0, type_graphql_1.Arg)("limit")),
+    __param(1, (0, type_graphql_1.Arg)("cursor", () => String, { nullable: true })),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [Number, Object]),
     __metadata("design:returntype", Promise)
 ], PostResolver.prototype, "posts", null);
 __decorate([

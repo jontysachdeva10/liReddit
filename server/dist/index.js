@@ -29,6 +29,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const app = (0, express_1.default)();
     // Initialize TypeORM
     yield typeorm_config_1.AppDataSource.initialize();
+    yield typeorm_config_1.AppDataSource.runMigrations();
     // create redis client
     const RedisStore = (0, connect_redis_1.default)(express_session_1.default);
     const redisClient = ioredis_1.default.createClient();
